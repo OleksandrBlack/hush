@@ -1,81 +1,117 @@
 # Installing Hush
 
-## Install
+## Download and Install Hush v2.0.0 Stable Release
 
-    echo 'deb https://dl.bintray.com/myhush/hush/ hush main' | sudo tee --append /etc/apt/sources.list.d/hush.list
-    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
-    sudo apt-get update
-    sudo apt-get install hush
+This method can be used to install release packages:
 
-## Create a HUSH configuration file (*important*):
-
-```
-mkdir -p ~/.hush
-echo "rpcuser=username" >> ~/.hush/hush.conf
-echo "rpcpassword=`head -c 32 /dev/urandom | base64`" >>~/.hush/hush.conf
-echo "addnode=node.myhush.network" >> ~/.hush/hush.conf
-echo "addnode=mmc01.madbuda.me" >> ~/.hush/hush.conf
-echo "addnode=zdash.suprnova.cc" >> ~/.hush/hush.conf
+```sh
+cd ~
+sudo wget https://github.com/MyHush/hush/releases/download/v2.0.0/hush-2.0.0-c7d6ba61-amd64.deb
+sudo dpkg -i hush-2.0.0-c7d6ba61-amd64.deb
 ```
 
-## Download proving key
+To install Hush from source, read on.
 
-This will download a Zcash Sprout proving key, if you already have one on this system, you only need one
-and this script will just verify that it is correct.
-
-```
-./zcutil/fetch-params.sh
-```
-
-# Building Hush from source
-
-Building Hush from source will take some time but your efforts will be rewarded :)
-
-## Requirements
-
-You will need at least 4GB of RAM to build hush from git source, OR
-you can enable a swap file. To enable a 4GB swap file on modern Linux
-distributions:
-
-    sudo fallocate -l 4G /swapfile
-    sudo chmod 600 /swapfile
-    sudo mkswap /swapfile
-    sudo swapon /swapfile
-
-You will need to have Git and a C++ compiler and libtool and a
-a few other libraries, depending on your setup.
-
-## Building
+## Build HUSH dependencies
 
 The following build process generally applies to Ubuntu (and similar) Linux
 distributions. For best results it is recommended to use Ubuntu Linux 16.04
 or later.
 
-Build HUSH along with most dependencies from source by running
-Get dependencies:
-```{r, engine='bash'}
+## Swap Space (Optional)
+You will need at least 4GB of RAM to build hush from git source, OR you can
+enable a swap file. To enable a 4GB swap file on modern Linux distributions:
 
+```sh
+sudo fallocate -l 4G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+```
+
+## Build on Linux:
+
+
+```sh
+# install build depedencies
+sudo apt-get install build-essential pkg-config libc6-dev m4 g++-multilib \
+      autoconf libtool ncurses-dev unzip git python zlib1g-dev wget \
+      bsdmainutils automake curl unzip nano
+# pull
+git clone https://github.com/MyHush/hush.git
+cd hush
+# Build
+./zcutil/build.sh -j$(nproc)
+```
+
+## Download proving key:
+```sh
+./zcutil/fetch-params.sh
+```
+
+## Create a HUSH configuration file (*important*):
+
+You can compile Hush without this, but need a config file to run hushd.
+
+```sh
+mkdir -p ~/.hush
+echo "rpcuser=username" >> ~/.hush/hush.conf
+echo "rpcpassword=`head -c 32 /dev/urandom | base64`" >>~/.hush/hush.conf
+echo "addnode=explorer.myhush.org" >> ~/.hush/hush.conf
+echo "addnode=dnsseed.myhush.org" >> ~/.hush/hush.conf
+echo "addnode=dnsseed2.myhush.org" >> ~/.hush/hush.conf
+echo "addnode=dnsseed.bleuzero.com" >> ~/.hush/hush.conf
+echo "addnode=dnsseed.hush.quebec" >> ~/.hush/hush.conf
+```
+
+## Run a HUSH Node
+
+```sh
+./hushd
+```
+
+## Windows (cross-compiled on Linux)
+Get dependencies:
+```ssh
 sudo apt-get install \
       build-essential pkg-config libc6-dev m4 g++-multilib \
       autoconf libtool ncurses-dev unzip git python \
-      zlib1g-dev wget bsdmainutils automake
+      zlib1g-dev wget bsdmainutils automake mingw-w64 cmake
 ```
 
-Make sure to create a HUSH configuration file as described above.
+Downloading Git source repo, building and running Hush:
 
-## Downloading Git source repo, building and running Hush
-
-```{r, engine='bash'}
+```sh
 # pull
 git clone https://github.com/MyHush/hush.git
 cd hush
 # fetch key
 ./zcutil/fetch-params.sh
 # Build
-./zcutil/build.sh -j$(nproc)
+./zcutil/build-win.sh -j$(nproc)
 # Run a HUSH node
 ./src/hushd
 ```
+
+## Mac
+Install Xcode CLI tools:
+
+```sh
+xcode-select --install
+```
+Downloading Git source repo, building and running Hush:
+
+```sh
+# pull
+git clone -b v2.0.0 https://github.com/FireMartZ/hush-apple.git
+cd hush-apple
+source environment
+make
+# Run a HUSH node
+./src/hushd
+```
+
+Make sure to create a HUSH configuration file as described above.
 
 ## Supported Platforms
 
@@ -91,4 +127,3 @@ set.
 
 This also means that RaspberryPi devices will not work, unless they have a
 newer ARMv8-based Raspberry Pi.
-
